@@ -11,11 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    
     - name: Configurer le JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        
     - name: Build avec Maven
-      run: mvn -B package --file pom.xml
+      # On ajoute 'working-directory' pour pointer vers le dossier du projet
+      working-directory: ./my-app 
+      run: mvn -B package
