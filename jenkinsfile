@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/AmineBAHDA00/Projet-DevOps-Bahda.git'
+            }
+        }
+        stage('Build & Test') {
+            steps {
+                dir('my-app') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'my-app/target/*.jar', fingerprint: true
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Déploiement en cours...'
+                sh 'java -jar my-app/target/my-app-1.0-SNAPSHOT.jar &'
+            }
+        }
+    }
+
+    // --- SECTION POUR L'ENVOI À SLACK ---
+    post {
+        success {
+            slackSend channel: '#jenkins-notifications',
+                      color: 'good',
+                      message: "✅ SUCCESS: Le build de ${env.JOB_NAME} (#${env.BUILD_NUMBER}) a réussi ! L'application est déployée. \nPlus d'infos : ${env.BUILD_URL}"
+        }
+        // Optionnel : vous pouvez aussi ajouter 'failure' si vous voulez être prévenu en cas d'erreur
+    }
+}
